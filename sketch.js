@@ -11,13 +11,13 @@ const GAME_MAP = [
   "101111111101",
   "101010001001",
   "101010101011",
-  "101000101001",
-  "101010101001",
-  "101010100001",
-  "100010000001",
+  "101000001001",
+  "101010000001",
+  "101010P00P01",
+  "100000000001",
   "111111111111"
 ];
-const TILE_SIZE = 50;
+const TILE_SIZE = 30;
 
 
 class Player {
@@ -72,6 +72,7 @@ class Floor extends Tile {
       TILE_SIZE);
   }
   pushAgainst(tile, direction) {
+	  console.log("empty");
     return true; // Always move into empty floor tile.
   }
 }
@@ -125,7 +126,7 @@ class Door extends Tile {
 class Key extends Tile {
   constructor(x, y) {
     super(x, y);
-    this.color = color(255, 150, 100);
+    this.color = color(245, 239, 66);
     this.isObtained = false;
   }
   show() {
@@ -146,27 +147,30 @@ class Key extends Tile {
   }
 }
 
-class pushBlock extends Tile {
-    constructor(x, y) {
+
+class PushBlock extends Tile {
+  constructor(x, y) {
     super(x, y);
     this.color = color(255, 150, 100);
-    this.isObtained = false;
   }
   show() {
-    if (this.isObtained == false) {
       fill(this.color);
       rect(this.x * TILE_SIZE + 10,
         this.y * TILE_SIZE + 10,
         TILE_SIZE - 20,
         TILE_SIZE - 20);
-    }
   }
-  pushAgainst() {
-    this.isObtained = true;
-    if (!player.hasItem("Key")) {
-      player.grabItem("Key");
+  pushAgainst(moveDir) {
+    let nextTile = createVector(this.x + moveDir.x, this.y + moveDir.y);
+	let isMovable = game_map.pushAgainst(nextTile, moveDir);
+	console.log(nextTile)
+	if (isMovable) {
+	  game_map.swapTiles()
+      this.x += moveDir.x;
+	  this.y += moveDir.y;
+	  return true;
     }
-    return true;
+    return false;
   }
 }
 
@@ -178,11 +182,20 @@ class Game_Map {
   set(tile_array) {
     this.tile_array = tile_array;
   }
+  load_map(map_data){
+	  
+  }
   update() {
     //for each tile, run tile.update() 
   }
   pushAgainst(tile, direction) {
+	 console.log(this.tile_array[tile.y][tile.x].pushAgainst(direction));
     return this.tile_array[tile.y][tile.x].pushAgainst(direction);
+  }
+  swapTiles(t1, t2){
+	  let tempTile = this.tile_array[t1.y][t1.x];
+	  this.tile_array[t1.y][t1.x] = this.tile_array[t2.y][t2.x];
+	  this.tile_array[t2.y][t2.x] = tempTile;
   }
   show() {
     for (let i = 0; i < this.tile_array[0].length; i++) {
@@ -198,7 +211,7 @@ let game_map = new Game_Map();
 let player = new Player(10, 10);
 
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(480, 480);
 
   // Load Map function
   let temp_map = [];
@@ -217,6 +230,9 @@ function setup() {
           break;
         case '3':
           temp_map[x].push(new Door(x, y));
+          break;
+        case 'P':
+          temp_map[x].push(new PushBlock(x, y));
           break;
         default:
           temp_map[x].push(new Floor(x, y));
