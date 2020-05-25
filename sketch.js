@@ -52,7 +52,7 @@ class Tile {
     this.y = y;
     this.visible = true;
   }
-  show() {}
+  show(x, y) {}
   update() {}
   pushAgainst() {}
   standOn() {}
@@ -62,17 +62,16 @@ class Tile {
 class Floor extends Tile {
   constructor(x, y) {
     super(x, y);
-    this.color = 0;
+    this.color = 40;
   }
-  show() {
+  show(x, y) {
     fill(this.color);
-    rect(this.x * TILE_SIZE,
-      this.y * TILE_SIZE,
+    rect(x * TILE_SIZE,
+      y * TILE_SIZE,
       TILE_SIZE,
       TILE_SIZE);
   }
   pushAgainst(tile, direction) {
-	  console.log("empty");
     return true; // Always move into empty floor tile.
   }
 }
@@ -83,10 +82,10 @@ class Wall extends Tile {
     super(x, y);
     this.color = 200;
   }
-  show() {
+  show(x, y) {
     fill(this.color);
-    rect(this.x * TILE_SIZE,
-      this.y * TILE_SIZE,
+    rect(x * TILE_SIZE,
+      y * TILE_SIZE,
       TILE_SIZE,
       TILE_SIZE);
   }
@@ -102,11 +101,11 @@ class Door extends Tile {
     this.color = color(0, 150, 150);
     this.isOpen = false;
   }
-  show() {
+  show(x, y) {
     if (this.isOpen == false) {
       fill(this.color);
-      rect(this.x * TILE_SIZE,
-        this.y * TILE_SIZE,
+      rect(x * TILE_SIZE,
+        y * TILE_SIZE,
         TILE_SIZE,
         TILE_SIZE);
     }
@@ -129,11 +128,11 @@ class Key extends Tile {
     this.color = color(245, 239, 66);
     this.isObtained = false;
   }
-  show() {
+  show(x, y) {
     if (this.isObtained == false) {
       fill(this.color);
-      rect(this.x * TILE_SIZE + 10,
-        this.y * TILE_SIZE + 10,
+      rect(x * TILE_SIZE + 10,
+        y * TILE_SIZE + 10,
         TILE_SIZE - 20,
         TILE_SIZE - 20);
     }
@@ -153,10 +152,10 @@ class PushBlock extends Tile {
     super(x, y);
     this.color = color(255, 150, 100);
   }
-  show() {
+  show(x, y) {
       fill(this.color);
-      rect(this.x * TILE_SIZE + 10,
-        this.y * TILE_SIZE + 10,
+      rect(x * TILE_SIZE + 10,
+        y * TILE_SIZE + 10,
         TILE_SIZE - 20,
         TILE_SIZE - 20);
   }
@@ -165,9 +164,9 @@ class PushBlock extends Tile {
 	let isMovable = game_map.pushAgainst(nextTile, moveDir);
 	console.log(nextTile)
 	if (isMovable) {
-	  game_map.swapTiles()
-      this.x += moveDir.x;
-	  this.y += moveDir.y;
+	  game_map.swapTiles({x:this.x,y:this.y},nextTile)
+      this.y += moveDir.x;
+	  this.x += moveDir.y;
 	  return true;
     }
     return false;
@@ -189,8 +188,8 @@ class Game_Map {
     //for each tile, run tile.update() 
   }
   pushAgainst(tile, direction) {
-	 console.log(this.tile_array[tile.y][tile.x].pushAgainst(direction));
-    return this.tile_array[tile.y][tile.x].pushAgainst(direction);
+	console.log(this.tile_array[tile.y][tile.x].pushAgainst(direction));
+    return this.tile_array[tile.x][tile.y].pushAgainst(direction);
   }
   swapTiles(t1, t2){
 	  let tempTile = this.tile_array[t1.y][t1.x];
@@ -200,7 +199,7 @@ class Game_Map {
   show() {
     for (let i = 0; i < this.tile_array[0].length; i++) {
       for (let j = 0; j < this.tile_array.length; j++) {
-        this.tile_array[j][i].show();
+        this.tile_array[j][i].show(j, i);
       }
     }
   }
@@ -252,7 +251,7 @@ function draw() {
 
 
 function keyPressed() {
-  let moveDir = createVector(0, 0)
+  let moveDir = {x : 0, y : 0}
 
   switch (keyCode) {
     case LEFT_ARROW:
